@@ -11,6 +11,7 @@ const initWebRoutes = (app) => {
     router.get("/webhook", chatbotController.getWebhook);
     router.post("/webhook", chatbotController.postWebhook);
 
+    router.post("/train-chat-bot", chatbotController.trainChatbot);
 
     return app.use("/", router);
 }

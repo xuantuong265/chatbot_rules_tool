@@ -1,4 +1,5 @@
 require("dotenv").config();
+import res from "express/lib/response";
 import request from "request";
 const { NlpManager } = require("node-nlp");
 const manager = new NlpManager({ languages: ["en"] });
@@ -8,6 +9,12 @@ const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 
 const getHomePage = (req, res) => {
     return res.send("heeleo em bahy em");
+};
+
+const trainChatbot = (req, res) => {
+    trainNLP()
+
+    return res.status(500).json({ message: 'thanh cong' })
 };
 
 const postWebhook = (req, res) => {
@@ -48,6 +55,9 @@ const postWebhook = (req, res) => {
 const getWebhook = (req, res) => {
     // Your verify token. Should be a random string.
     const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+
+    console.log(VERIFY_TOKEN);
+    console.log("hello");
 
     // Parse the query params
     let mode = req.query['hub.mode'];
@@ -98,6 +108,10 @@ function callSendAPI(senderPsid, response) {
         'message': response
     };
 
+
+    console.log("dduf ma may");
+    console.log(requestBody);
+
     // Send the HTTP request to the Messenger Platform
     request({
         'uri': 'https://graph.facebook.com/v2.6/me/messages',
@@ -105,6 +119,8 @@ function callSendAPI(senderPsid, response) {
         'method': 'POST',
         'json': requestBody
     }, (err, _res, _body) => {
+        console.log(err);
+        console.log(_res);
         if (!err) {
             console.log('Message sent!');
         } else {
@@ -126,6 +142,7 @@ async function handleMessage(senderPsid, receivedMessage) {
         // Create the payload for a basic text message, which
         // will be added to the body of your request to the Send API
         console.log("hihih: " + response);
+        console.log("ddu sfsfsfsa" + message);
         response = {
             'text': message
         };
@@ -164,34 +181,21 @@ async function handleMessage(senderPsid, receivedMessage) {
 }
 
 async function handleMessageNPL(receivedMessage) {
-    // const dock = await dockStart({ use: ['Basic'] });
-    // const nlp = dock.get('nlp');
-    // nlp.addLanguage('en');
-    // // Adds the utterances and intents for the NLP
-    // nlp.addDocument('en', 'goodbye for now', 'greetings.bye');
-    // nlp.addDocument('en', 'bye bye take care', 'greetings.bye');
-    // nlp.addDocument('en', 'okay see you later', 'greetings.bye');
-    // nlp.addDocument('en', 'bye for now', 'greetings.bye');
-    // nlp.addDocument('en', 'i must go', 'greetings.bye');
-    // nlp.addDocument('en', 'hello', 'greetings.hello');
-    // nlp.addDocument('en', 'hi', 'greetings.hello');
-    // nlp.addDocument('en', 'howdy', 'greetings.hello');
-
-    // // Train also the NLG
-    // nlp.addAnswer('en', 'greetings.bye', 'Till next time');
-    // nlp.addAnswer('en', 'greetings.bye', 'see you soon!');
-    // nlp.addAnswer('en', 'greetings.hello', 'Hey there!');
-    // nlp.addAnswer('en', 'greetings.hello', 'Greetings!');
-    // await nlp.train();
-    // const response = await nlp.process('en', receivedMessage.text);
-
-
     const response = await manager.process("en", receivedMessage.text);
+    console.log("ddu");
+    console.log(response.answer);
     return response.answer;
+}
+
+async function trainNLP() {
+    manager.addCorpora('src/data/corpus-en.json');
+    await manager.train();
+    manager.save();
 }
 
 module.exports = {
     getHomePage,
     getWebhook,
-    postWebhook
+    postWebhook,
+    trainChatbot
 }
