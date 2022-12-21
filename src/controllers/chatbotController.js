@@ -5,6 +5,8 @@ const { NlpManager } = require("node-nlp");
 const manager = new NlpManager({ languages: ["en"] });
 manager.load();
 
+import chatbotService from "../services/chatbotService";
+
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 
 const getHomePage = (req, res) => {
@@ -17,6 +19,27 @@ const trainChatbot = (req, res) => {
     return res.status(500).json({ message: 'thanh cong' })
 };
 
+const setupProfile = (req, res) => {
+    // let requestBody = {
+    //     "get_started": { "payload": "GET_STARTED" },
+    //     "whitelisted_domains": ["https://chatbot-rules-tool.onrender.com"]
+    // }
+
+    // request({
+    //     'uri': `https://graph.facebook.com/v2.6/me/messenger_profile?access_token=${PAGE_ACCESS_TOKEN}`,
+    //     'qs': { 'access_token': PAGE_ACCESS_TOKEN },
+    //     'method': 'POST',
+    //     'json': requestBody
+    // }, (err, _res, _body) => {
+    //     console.log(_body);
+    //     if (!err) {
+    //         console.log('success!');
+    //     } else {
+    //         console.error('Unable to send message:' + err);
+    //     }
+    // });
+}
+
 const postWebhook = (req, res) => {
     let body = req.body;
 
@@ -28,11 +51,9 @@ const postWebhook = (req, res) => {
 
             // Gets the body of the webhook event
             let webhookEvent = entry.messaging[0];
-            console.log(webhookEvent);
 
             // Get the sender PSID
             let senderPsid = webhookEvent.sender.id;
-            console.log('Sender PSID: ' + senderPsid);
 
             // Check if the event is a message or postback and
             // pass the event to the appropriate handler function
@@ -56,9 +77,6 @@ const getWebhook = (req, res) => {
     // Your verify token. Should be a random string.
     const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 
-    console.log(VERIFY_TOKEN);
-    console.log("hello");
-
     // Parse the query params
     let mode = req.query['hub.mode'];
     let token = req.query['hub.verify_token'];
@@ -69,11 +87,7 @@ const getWebhook = (req, res) => {
 
         // Checks the mode and token sent is correct
         if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-
-            // Responds with the challenge token from the request
-            console.log('WEBHOOK_VERIFIED');
             res.status(200).send(challenge);
-
         } else {
             // Responds with '403 Forbidden' if verify tokens do not match
             res.sendStatus(403);
@@ -81,68 +95,64 @@ const getWebhook = (req, res) => {
     }
 };
 
+const handleScoreTable = (req, res) => {
+    const senderID = req.params.senderId;
+
+    return res.render("score-table.ejs", {
+        senderID: "387523857"
+    });
+}
+
+const handlePostScoreTable = async(req, res) => {
+    try {
+        let response1 = {
+            "text": `---Info about your lookup order---
+            \nCustomer name: ${req.body.customerName}
+            \nEmail address: ${req.body.email}
+            \nOrder number: ${req.body.orderNumber}
+            `
+        };
+
+        await chatbotService.callSendAPI(req.body.psid, response1);
+
+        return res.status(200).json({
+            message: req.body.psid
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: "error"
+        });
+    }
+}
+
 // Handles messaging_postbacks events
-function handlePostback(senderPsid, receivedPostback) {
+async function handlePostback(senderPsid, receivedPostback) {
     let response;
 
     // Get the payload for the postback
     let payload = receivedPostback.payload;
+
+    console.log("hello");
+    console.log(payload);
 
     // Set the response based on the postback payload
     if (payload === 'yes') {
         response = { 'text': 'Thanks!' };
     } else if (payload === 'no') {
         response = { 'text': 'Oops, try sending another image.' };
+    } else if (payload == 'GET_STARTED') {
+        await chatbotService.handleGetStarted(senderPsid);
+    } else if (payload == 'SCORE') {
+        await chatbotService.handleScoreStudent
     }
-    // Send the message to acknowledge the postback
-    callSendAPI(senderPsid, response);
-}
-
-// Sends response messages via the Send API
-function callSendAPI(senderPsid, response) {
-    // Construct the message body
-    let requestBody = {
-        'recipient': {
-            'id': senderPsid
-        },
-        'message': response
-    };
-
-
-    console.log("dduf ma may");
-    console.log(requestBody);
-
-    // Send the HTTP request to the Messenger Platform
-    request({
-        'uri': 'https://graph.facebook.com/v2.6/me/messages',
-        'qs': { 'access_token': PAGE_ACCESS_TOKEN },
-        'method': 'POST',
-        'json': requestBody
-    }, (err, _res, _body) => {
-        console.log(err);
-        console.log(_res);
-        if (!err) {
-            console.log('Message sent!');
-        } else {
-            console.error('Unable to send message:' + err);
-        }
-    });
 }
 
 // Handles messages events
 async function handleMessage(senderPsid, receivedMessage) {
-
-    console.log(receivedMessage.text + "-----------");
-
     let response;
     let message = await handleMessageNPL(receivedMessage);
 
-    // Checks if the message contains text
     if (receivedMessage.text) {
-        // Create the payload for a basic text message, which
-        // will be added to the body of your request to the Send API
-        console.log("hihih: " + response);
-        console.log("ddu sfsfsfsa" + message);
         response = {
             'text': message
         };
@@ -177,13 +187,11 @@ async function handleMessage(senderPsid, receivedMessage) {
     }
 
     // Send the response message
-    callSendAPI(senderPsid, response);
+    chatbotService.callSendAPI(senderPsid, response);
 }
 
 async function handleMessageNPL(receivedMessage) {
     const response = await manager.process("en", receivedMessage.text);
-    console.log("ddu");
-    console.log(response.answer);
     return response.answer;
 }
 
@@ -197,5 +205,8 @@ module.exports = {
     getHomePage,
     getWebhook,
     postWebhook,
-    trainChatbot
+    trainChatbot,
+    setupProfile,
+    handleScoreTable,
+    handlePostScoreTable
 }
