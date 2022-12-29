@@ -3,6 +3,7 @@ require("dotenv").config();
 import request from "request";
 
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+const URL_WEB_SERVER_CHATBOT = process.env.URL_WEB_SERVER_CHATBOT;
 
 const callSendAPI = (senderPsid, response) => {
     let requestBody = {
@@ -55,31 +56,10 @@ const getUserName = (senderPsid) => {
 const handleGetStarted = (senderPsid) => {
     return new Promise(async(resolve, reject) => {
         try {
-            const userName = await getUserName(senderPsid);
-            const response = { "text": `Chào mừng ${userName} đến với Demo VKU!` }
-
-            const response1 = {
-                "attachment": {
-                    "type": "template",
-                    "payload": {
-                        "template_type": "generic",
-                        'elements': [{
-                            'title': 'Chọn để xem thông tin về điểm của bạn.',
-                            'subtitle': 'Tap a button to answer.',
-                            "buttons": [{
-                                "type": "web_url",
-                                "url": `${process.env.URL_WEB_VIEW_SCORE}/${senderPsid}`,
-                                "title": "XEM ĐIỂM",
-                                "webview_height_ratio": "tall",
-                                "messenger_extensions": true //false: open the webview in new tab
-                            }, ]
-                        }]
-                    }
-                }
-            };
+            // const userName = await getUserName(senderPsid);
+            const response = { "text": `Chào mừng bạn đến với Demo VKU!` }
 
             await callSendAPI(senderPsid, response);
-            await callSendAPI(senderPsid, response1);
             resolve("done");
         } catch (error) {
             reject(error);
@@ -87,13 +67,178 @@ const handleGetStarted = (senderPsid) => {
     })
 }
 
-const handleScoreStudent = () => {
+const showMessageScore = (senderPsid) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const url = `${process.env.URL_WEB_VIEW_SCORE}/${senderPsid}`;
+            const response = templateMessage(url, "XEM ĐIỂM")
 
+            await callSendAPI(senderPsid, response);
+            resolve("done");
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const showMessageLearnRest = (senderPsid) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const url = `${URL_WEB_SERVER_CHATBOT}` + "/learn-rest" + `/${senderPsid}`;
+            const response = templateMessage(url, "HỌC PHẦN CÒN LẠI")
+
+            await callSendAPI(senderPsid, response);
+            resolve("done");
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const showMessageSubjectStuding = (senderPsid) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const url = `${URL_WEB_SERVER_CHATBOT}` + "/subject-studing" + `/${senderPsid}`;
+            const response = templateMessage(url, "CÁC MÔN ĐANG HỌC")
+
+            await callSendAPI(senderPsid, response);
+            resolve("done");
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const showMessageUnlearnedSubjects = (senderPsid) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const url = `${URL_WEB_SERVER_CHATBOT}` + "/unlearned-subjects" + `/${senderPsid}`;
+            const response = templateMessage(url, "CÁC MÔN CHƯA HỌC")
+
+            await callSendAPI(senderPsid, response);
+            resolve("done");
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const showMessageDebtCourses = (senderPsid) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const url = `${URL_WEB_SERVER_CHATBOT}` + "/debt-courses" + `/${senderPsid}`;
+            const response = templateMessage(url, "CÁC MÔN NỢ")
+
+            await callSendAPI(senderPsid, response);
+            resolve("done");
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const showMessageTotalTuitionFee = (senderPsid) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const url = `${URL_WEB_SERVER_CHATBOT}` + "/total-tuition-fee" + `/${senderPsid}`;
+            const response = templateMessage(url, "TỔNG HỌC PHÍ")
+
+            await callSendAPI(senderPsid, response);
+            resolve("done");
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const showMessageUnpaidTuitionFees = (senderPsid) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const url = `${URL_WEB_SERVER_CHATBOT}` + "/unpaid-tuition-fees" + `/${senderPsid}`;
+            const response = templateMessage(url, "HỌC PHÍ CHƯA NỘP")
+
+            await callSendAPI(senderPsid, response);
+            resolve("done");
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const showMessageTuitionFeePaid = (senderPsid) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const url = `${URL_WEB_SERVER_CHATBOT}` + "/tuition-fee-paid" + `/${senderPsid}`;
+            const response = templateMessage(url, "HỌC PHÍ ĐÃ NỘP")
+
+            await callSendAPI(senderPsid, response);
+            resolve("done");
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const showMessageUnpaidCourseFees = (senderPsid) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const url = `${URL_WEB_SERVER_CHATBOT}` + "/unpaid-course-fees" + `/${senderPsid}`;
+            const response = templateMessage(url, "HỌC PHÍ THEO MÔN CHƯA ĐÓNG")
+
+            await callSendAPI(senderPsid, response);
+            resolve("done");
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const showMessageSemestersFees = (senderPsid) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            const url = `${URL_WEB_SERVER_CHATBOT}` + "/semester-fee" + `/${senderPsid}`;
+            const response = templateMessage(url, "HỌC PHÍ THEO KỲ")
+
+            await callSendAPI(senderPsid, response);
+            resolve("done");
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const templateMessage = (url, title) => {
+    return {
+        "attachment": {
+            "type": "template",
+            "payload": {
+                "template_type": "generic",
+                'elements': [{
+                    'title': 'Chọn để  nhập thông tin của bạn.',
+                    "buttons": [{
+                        "type": "web_url",
+                        "url": url,
+                        "title": title,
+                        "webview_height_ratio": "tall",
+                        "messenger_extensions": true //false: open the webview in new tab
+                    }, ]
+                }]
+            }
+        }
+    };
 }
 
 module.exports = {
     callSendAPI,
     handleGetStarted,
-    handleScoreStudent,
-    callSendAPI
+    showMessageScore,
+    showMessageLearnRest,
+    showMessageSubjectStuding,
+    showMessageUnlearnedSubjects,
+    showMessageDebtCourses,
+    showMessageTotalTuitionFee,
+    showMessageTuitionFeePaid,
+    showMessageUnpaidTuitionFees,
+    showMessageUnpaidCourseFees,
+    showMessageSemestersFees
 }

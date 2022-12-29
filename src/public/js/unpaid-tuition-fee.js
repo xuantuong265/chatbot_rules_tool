@@ -56,24 +56,26 @@ function handleClickButtonScoreTable() {
 
         let data = {
             psid: $("#psid").val(),
-            email: $("#email").val(),
             masv: $("#masv").val()
         };
 
         if (!check) {
             //close webview
-            MessengerExtensions.requestCloseBrowser(function success() {
-                console.log("dduf mas ay");
-                // webview closed
-            }, function error(err) {});
+
 
             //send data to node.js server 
             $.ajax({
-                url: `${window.location.origin}/score-table`,
+                url: `${window.location.origin}/unpaid-tuition-fee`,
                 method: "POST",
                 data: data,
                 success: function(data) {
-                    location.requestCloseBrowser()
+                    MessengerExtensions.requestCloseBrowser(function success() {
+                        console.log("dduf mas ay");
+                        // webview closed
+                    }, function error(err) {
+                        // an error occurred
+                        console.log(err);
+                    });
                 },
                 error: function(error) {
                     console.log(error);

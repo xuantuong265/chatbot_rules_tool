@@ -1,22 +1,48 @@
 require("dotenv").config();
-import res from "express/lib/response";
+import res, { render } from "express/lib/response";
 import request from "request";
 const { NlpManager } = require("node-nlp");
-const manager = new NlpManager({ languages: ["en"] });
-manager.load();
+const manager = new NlpManager({ languages: ["vi"] });
+import axios from 'axios';
+const fs = require('fs').promises
 
 import chatbotService from "../services/chatbotService";
+import sendmailService from "../services/sendmailService";
+import { URL_WEB_SERVER } from "../constants/chatbots-constant";
 
-const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
-
-const getHomePage = (req, res) => {
+const getHomePage = async(req, res) => {
     return res.send("heeleo em bahy em");
 };
 
-const trainChatbot = (req, res) => {
-    trainNLP()
+const trainChatbot = async(req, res) => {
+    try {
+        manager.addCorpora('src/data/corpus-en.json');
+        await manager.train();
+        manager.save();
 
-    return res.status(500).json({ message: 'thanh cong' })
+        return res.status(200).json({
+            message: "oke"
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error
+        });
+    }
+};
+
+const writeChatbot = async(req, res) => {
+    try {
+        const response = await axios.get(`${URL_WEB_SERVER}/api`);
+        await fs.writeFile('src/data/corpus-en.json', JSON.stringify(response.data), (err) => {});
+
+        return res.status(200).json({
+            message: "oke"
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error
+        });
+    }
 };
 
 const setupProfile = (req, res) => {
@@ -96,31 +122,339 @@ const getWebhook = (req, res) => {
 };
 
 const handleScoreTable = (req, res) => {
-    const senderID = req.params.senderId;
+    const senderID = req.params.senderID;
 
     return res.render("score-table.ejs", {
-        senderID: "387523857"
+        senderID: senderID
     });
 }
 
 const handlePostScoreTable = async(req, res) => {
     try {
         let response1 = {
-            "text": `---Info about your lookup order---
-            \nCustomer name: ${req.body.customerName}
-            \nEmail address: ${req.body.email}
-            \nOrder number: ${req.body.orderNumber}
-            `
+            "text": `Bạn kiểm tra email để xem điểm.`
         };
 
+        let email = req.body.email;
+        let masv = req.body.masv;
+
+        console.log(req.body.psid);
+
         await chatbotService.callSendAPI(req.body.psid, response1);
+        const response = await axios.get(`${URL_WEB_SERVER}/showapi?code=${masv}&email=${email}`);
+        // await sendmailService.sendEmail(email, response.data);
 
         return res.status(200).json({
-            message: req.body.psid
+            message: "ok"
         });
     } catch (e) {
         return res.status(500).json({
-            message: "error"
+            message: e
+        });
+    }
+}
+
+const handleLearnRest = (req, res) => {
+    const senderID = req.params.senderID;
+
+    return res.render("learn-rest.ejs", {
+        senderID: senderID
+    });
+}
+
+const handlePostLearnRest = async(req, res) => {
+    try {
+        let masv = req.body.masv;
+
+        const response = await axios.get(`${URL_WEB_SERVER}/mondahoc?code=${masv}`);
+        let subject = "";
+        response.data.forEach(element => {
+            subject += " " + `${element.mon}`
+        });
+
+        let message = {
+            "text": `Các môn đã học của bạn: \n` +
+                `${subject}`
+        };
+
+        await chatbotService.callSendAPI(req.body.psid, message);
+
+        return res.status(200).json({
+            message: "ok"
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: e
+        });
+    }
+}
+
+const handleSubjectStuding = (req, res) => {
+    const senderID = req.params.senderID;
+
+    return res.render("subject-studing.ejs", {
+        senderID: senderID
+    });
+}
+
+const handlePostSubjectStuding = async(req, res) => {
+    try {
+        let masv = req.body.masv;
+
+        const response = await axios.get(`${URL_WEB_SERVER}/mondanghoc?code=${masv}`);
+        let subject = "";
+        response.data.forEach(element => {
+            subject += ", " + `${element.mon}`
+        });
+
+        let message = {
+            "text": `Các môn đang học của bạn: \n` +
+                `${subject}`
+        };
+
+        await chatbotService.callSendAPI(req.body.psid, message);
+
+        return res.status(200).json({
+            message: "ok"
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: e
+        });
+    }
+}
+
+const handleUnlearnedSubjects = (req, res) => {
+    const senderID = req.params.senderID;
+
+    return res.render("unlearn-studing.ejs", {
+        senderID: senderID
+    });
+}
+
+const handlePostUnlearnedSubjects = async(req, res) => {
+    try {
+        let masv = req.body.masv;
+
+        const response = await axios.get(`${URL_WEB_SERVER}/monchuahoc?code=${masv}`);
+        let subject = "";
+        response.data.forEach(element => {
+            subject += ", " + `${element.mon}`
+        });
+
+        let message = {
+            "text": `Các môn chua học của bạn: \n` +
+                `${subject}`
+        };
+
+        await chatbotService.callSendAPI(req.body.psid, message);
+
+        return res.status(200).json({
+            message: "ok"
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: e
+        });
+    }
+}
+
+const handleDebtCourses = (req, res) => {
+    const senderID = req.params.senderID;
+
+    return res.render("debt-courses.ejs", {
+        senderID: senderID
+    });
+}
+
+const handlePostDebtCourses = async(req, res) => {
+    try {
+        let masv = req.body.masv;
+
+        const response = await axios.get(`${URL_WEB_SERVER}/monno?code=${masv}`);
+        let subject = "";
+        response.data.forEach(element => {
+            subject += ", " + `${element.mon}`
+        });
+
+        let message = {
+            "text": `Các môn học nợ của bạn: \n` +
+                `${subject}`
+        };
+
+        await chatbotService.callSendAPI(req.body.psid, message);
+
+        return res.status(200).json({
+            message: "ok"
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: e
+        });
+    }
+}
+
+const handleTotalTuitionFee = (req, res) => {
+    const senderID = req.params.senderID;
+
+    return res.render("total-tuition-fee.ejs", {
+        senderID: senderID
+    });
+}
+
+const handlePostTotalTuitionFee = async(req, res) => {
+    try {
+        let masv = req.body.masv;
+
+        const response = await axios.get(`${URL_WEB_SERVER}/tonghocphi?code=${masv}`);
+        const hocphi = response.data.tonghocphi.toLocaleString('vi', { style: 'currency', currency: 'VND' });
+
+        let message = {
+            "text": `Tổng học phí của sinh viên: ${response.data.sinhvien}  là: ${hocphi}`
+        };
+
+        await chatbotService.callSendAPI(req.body.psid, message);
+
+        return res.status(200).json({
+            message: "ok"
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: e
+        });
+    }
+}
+
+const handleUnpaidTuitionFees = (req, res) => {
+    const senderID = req.params.senderID;
+
+    return res.render("unpaid-tuition-fee.ejs", {
+        senderID: senderID
+    });
+}
+
+const handlePostUnpaidTuitionFees = async(req, res) => {
+    try {
+        let masv = req.body.masv;
+
+        const response = await axios.get(`${URL_WEB_SERVER}/hocphichuanop?code=${masv}`);
+        const hocphi = response.data.hocphichuanop.toLocaleString('vi', { style: 'currency', currency: 'VND' });
+
+        let message = {
+            "text": `Tổng học phí chưa nộp của sinh viên: ${response.data.sinhvien}  là: ${hocphi}`
+        };
+
+        await chatbotService.callSendAPI(req.body.psid, message);
+
+        return res.status(200).json({
+            message: "ok"
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: e
+        });
+    }
+}
+
+const handleTuitionFeePaid = (req, res) => {
+    const senderID = req.params.senderID;
+
+    return res.render("tuition-fee.ejs", {
+        senderID: senderID
+    });
+}
+
+const handlePostTuitionFeePaid = async(req, res) => {
+    try {
+        let masv = req.body.masv;
+
+        const response = await axios.get(`${URL_WEB_SERVER}/hocphidanop?code=${masv}`);
+        const hocphi = response.data.hocphidanop.toLocaleString('vi', { style: 'currency', currency: 'VND' });
+
+        let message = {
+            "text": `Tổng học phí đã nộp của sinh viên: ${response.data.sinhvien}  là: ${hocphi}`
+        };
+
+        await chatbotService.callSendAPI(req.body.psid, message);
+
+        return res.status(200).json({
+            message: "ok"
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: e
+        });
+    }
+}
+
+const handleUnpaidCourseFees = (req, res) => {
+    const senderID = req.params.senderID;
+
+    return res.render("unpaid-course-fee.ejs", {
+        senderID: senderID
+    });
+}
+
+const handlePostUnpaidCourseFees = async(req, res) => {
+    try {
+        let masv = req.body.masv;
+
+        const response = await axios.get(`${URL_WEB_SERVER}/hocphitheomonchuadong?code=${masv}`);
+
+        let subject = "";
+        response.data.forEach(element => {
+            const hocphi = element.hocphi.toLocaleString('vi', { style: 'currency', currency: 'VND' });
+            subject += `Môn học: ${element.mon}, học phí: ${hocphi} \n`
+        });
+
+        let message = {
+            "text": `Nhưng môn chưa đóng học phí: \n ${subject}`
+        };
+
+        await chatbotService.callSendAPI(req.body.psid, message);
+
+        return res.status(200).json({
+            message: "ok"
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: e
+        });
+    }
+}
+
+const handleSemestersFees = (req, res) => {
+    const senderID = req.params.senderID;
+
+    return res.render("semester-fee.ejs", {
+        senderID: senderID
+    });
+}
+
+const handlePostSemestersFees = async(req, res) => {
+    try {
+        let masv = req.body.masv;
+
+        const response = await axios.get(`${URL_WEB_SERVER}/hocphitheoki?code=${masv}`);
+
+        let subject = "";
+        response.data.forEach(element => {
+            const hocphi = element.tongtien.toLocaleString('vi', { style: 'currency', currency: 'VND' });
+            subject += `Học kì: ${element.hocki}, niên khóa: ${element.nienkhoa} ,học phí: ${hocphi} \n`
+        });
+
+        let message = {
+            "text": `Học phí theo từng học kì: \n ${subject}`
+        };
+
+        await chatbotService.callSendAPI(req.body.psid, message);
+
+        return res.status(200).json({
+            message: "ok"
+        });
+    } catch (e) {
+        return res.status(500).json({
+            message: e
         });
     }
 }
@@ -132,9 +466,6 @@ async function handlePostback(senderPsid, receivedPostback) {
     // Get the payload for the postback
     let payload = receivedPostback.payload;
 
-    console.log("hello");
-    console.log(payload);
-
     // Set the response based on the postback payload
     if (payload === 'yes') {
         response = { 'text': 'Thanks!' };
@@ -142,15 +473,13 @@ async function handlePostback(senderPsid, receivedPostback) {
         response = { 'text': 'Oops, try sending another image.' };
     } else if (payload == 'GET_STARTED') {
         await chatbotService.handleGetStarted(senderPsid);
-    } else if (payload == 'SCORE') {
-        await chatbotService.handleScoreStudent
     }
 }
 
 // Handles messages events
 async function handleMessage(senderPsid, receivedMessage) {
     let response;
-    let message = await handleMessageNPL(receivedMessage);
+    let message = await handleMessageNPL(receivedMessage, senderPsid);
 
     if (receivedMessage.text) {
         response = {
@@ -190,15 +519,33 @@ async function handleMessage(senderPsid, receivedMessage) {
     chatbotService.callSendAPI(senderPsid, response);
 }
 
-async function handleMessageNPL(receivedMessage) {
-    const response = await manager.process("en", receivedMessage.text);
+async function handleMessageNPL(receivedMessage, senderPsid) {
+    manager.load();
+    const response = await manager.process("vi", receivedMessage.text);
+    if (response.answers.length == 0) {
+        return 'Xin lỗi, tôi không hiểu câu hỏi của bạn.';
+    } else if (response.intent == "agent.score") {
+        await chatbotService.showMessageScore(senderPsid)
+    } else if (response.intent == "agent.mondahoc") {
+        await chatbotService.showMessageLearnRest(senderPsid)
+    } else if (response.intent == "agent.mondanghoc") {
+        await chatbotService.showMessageSubjectStuding(senderPsid)
+    } else if (response.intent == "agent.monchuahoc") {
+        await chatbotService.showMessageUnlearnedSubjects(senderPsid)
+    } else if (response.intent == "agent.monno") {
+        await chatbotService.showMessageDebtCourses(senderPsid)
+    } else if (response.intent == "agent.tonghocphi") {
+        await chatbotService.showMessageTotalTuitionFee(senderPsid)
+    } else if (response.intent == "agent.hocphidanop") {
+        await chatbotService.showMessageTuitionFeePaid(senderPsid)
+    } else if (response.intent == "agent.hocphichuanop") {
+        await chatbotService.showMessageUnpaidTuitionFees(senderPsid)
+    } else if (response.intent == "agent.hocphitheomonchuadong") {
+        await chatbotService.showMessageUnpaidCourseFees(senderPsid)
+    } else if (response.intent == "agent.hocphicackichuahoc") {
+        await chatbotService.showMessageFeesUnstudiedSemesters(senderPsid)
+    }
     return response.answer;
-}
-
-async function trainNLP() {
-    manager.addCorpora('src/data/corpus-en.json');
-    await manager.train();
-    manager.save();
 }
 
 module.exports = {
@@ -208,5 +555,24 @@ module.exports = {
     trainChatbot,
     setupProfile,
     handleScoreTable,
-    handlePostScoreTable
+    handlePostScoreTable,
+    handleLearnRest,
+    handlePostLearnRest,
+    writeChatbot,
+    handleSubjectStuding,
+    handlePostSubjectStuding,
+    handleUnlearnedSubjects,
+    handlePostUnlearnedSubjects,
+    handleDebtCourses,
+    handlePostDebtCourses,
+    handleTotalTuitionFee,
+    handlePostTotalTuitionFee,
+    handleUnpaidTuitionFees,
+    handlePostUnpaidTuitionFees,
+    handleTuitionFeePaid,
+    handlePostTuitionFeePaid,
+    handleUnpaidCourseFees,
+    handlePostUnpaidCourseFees,
+    handleSemestersFees,
+    handlePostSemestersFees
 }

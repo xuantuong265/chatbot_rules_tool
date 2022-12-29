@@ -8,6 +8,9 @@ require("dotenv").config();
 
 const app = express();
 
+var cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 viewEngine(app);
 
 app.use(bodyParser.json());
