@@ -8,10 +8,11 @@ const fs = require('fs').promises
 
 import chatbotService from "../services/chatbotService";
 import sendmailService from "../services/sendmailService";
-import { URL_WEB_SERVER } from "../constants/chatbots-constant";
+
+const URL_WEB_SERVER = process.env.URL_WEB_SERVER;
 
 const getHomePage = async(req, res) => {
-    return res.send("heeleo em bahy em");
+    return res.send("ok");
 };
 
 const trainChatbot = async(req, res) => {
@@ -138,11 +139,17 @@ const handlePostScoreTable = async(req, res) => {
         let email = req.body.email;
         let masv = req.body.masv;
 
-        console.log(req.body.psid);
-
-        await chatbotService.callSendAPI(req.body.psid, response1);
         const response = await axios.get(`${URL_WEB_SERVER}/showapi?code=${masv}&email=${email}`);
-        // await sendmailService.sendEmail(email, response.data);
+
+        if (response.data.length == 0) {
+            response1 = {
+                "text": "Bạn cung cấp sai, vui lòng nhập lại."
+            };
+            await chatbotService.callSendAPI(req.body.psid, response1);
+        } else {
+            await chatbotService.callSendAPI(req.body.psid, response1);
+            await sendmailService.sendEmail(email, response.data);
+        }
 
         return res.status(200).json({
             message: "ok"
@@ -165,17 +172,23 @@ const handleLearnRest = (req, res) => {
 const handlePostLearnRest = async(req, res) => {
     try {
         let masv = req.body.masv;
+        let message = {
+            "text": "Bạn cung cấp sai, vui lòng nhập lại."
+        };
 
         const response = await axios.get(`${URL_WEB_SERVER}/mondahoc?code=${masv}`);
-        let subject = "";
-        response.data.forEach(element => {
-            subject += " " + `${element.mon}`
-        });
 
-        let message = {
-            "text": `Các môn đã học của bạn: \n` +
-                `${subject}`
-        };
+        if (response.data.length > 0) {
+            let subject = "";
+            response.data.forEach(element => {
+                subject += " " + `${element.mon}`
+            });
+
+            message = {
+                "text": `Các môn đã học của bạn: \n` +
+                    `${subject}`
+            };
+        }
 
         await chatbotService.callSendAPI(req.body.psid, message);
 
@@ -200,17 +213,23 @@ const handleSubjectStuding = (req, res) => {
 const handlePostSubjectStuding = async(req, res) => {
     try {
         let masv = req.body.masv;
+        let message = {
+            "text": "Bạn cung cấp sai, vui lòng nhập lại."
+        };
 
         const response = await axios.get(`${URL_WEB_SERVER}/mondanghoc?code=${masv}`);
-        let subject = "";
-        response.data.forEach(element => {
-            subject += ", " + `${element.mon}`
-        });
 
-        let message = {
-            "text": `Các môn đang học của bạn: \n` +
-                `${subject}`
-        };
+        if (response.data.length > 0) {
+            let subject = "";
+            response.data.forEach(element => {
+                subject += ", " + `${element.mon}`
+            });
+
+            message = {
+                "text": `Các môn đang học của bạn: \n` +
+                    `${subject}`
+            };
+        }
 
         await chatbotService.callSendAPI(req.body.psid, message);
 
@@ -235,17 +254,23 @@ const handleUnlearnedSubjects = (req, res) => {
 const handlePostUnlearnedSubjects = async(req, res) => {
     try {
         let masv = req.body.masv;
+        let message = {
+            "text": "Bạn cung cấp sai, vui lòng nhập lại."
+        };
 
         const response = await axios.get(`${URL_WEB_SERVER}/monchuahoc?code=${masv}`);
-        let subject = "";
-        response.data.forEach(element => {
-            subject += ", " + `${element.mon}`
-        });
 
-        let message = {
-            "text": `Các môn chua học của bạn: \n` +
-                `${subject}`
-        };
+        if (response.data.length > 0) {
+            let subject = "";
+            response.data.forEach(element => {
+                subject += ", " + `${element.mon}`
+            });
+
+            message = {
+                "text": `Các môn chua học của bạn: \n` +
+                    `${subject}`
+            };
+        }
 
         await chatbotService.callSendAPI(req.body.psid, message);
 
@@ -270,17 +295,23 @@ const handleDebtCourses = (req, res) => {
 const handlePostDebtCourses = async(req, res) => {
     try {
         let masv = req.body.masv;
+        let message = {
+            "text": "Bạn cung cấp sai, vui lòng nhập lại."
+        };
 
         const response = await axios.get(`${URL_WEB_SERVER}/monno?code=${masv}`);
-        let subject = "";
-        response.data.forEach(element => {
-            subject += ", " + `${element.mon}`
-        });
 
-        let message = {
-            "text": `Các môn học nợ của bạn: \n` +
-                `${subject}`
-        };
+        if (response.data.length > 0) {
+            let subject = "";
+            response.data.forEach(element => {
+                subject += ", " + `${element.mon}`
+            });
+
+            message = {
+                "text": `Các môn học nợ của bạn: \n` +
+                    `${subject}`
+            };
+        }
 
         await chatbotService.callSendAPI(req.body.psid, message);
 
@@ -305,13 +336,19 @@ const handleTotalTuitionFee = (req, res) => {
 const handlePostTotalTuitionFee = async(req, res) => {
     try {
         let masv = req.body.masv;
+        let message = {
+            "text": "Bạn cung cấp sai, vui lòng nhập lại."
+        };
 
         const response = await axios.get(`${URL_WEB_SERVER}/tonghocphi?code=${masv}`);
-        const hocphi = response.data.tonghocphi.toLocaleString('vi', { style: 'currency', currency: 'VND' });
 
-        let message = {
-            "text": `Tổng học phí của sinh viên: ${response.data.sinhvien}  là: ${hocphi}`
-        };
+        if (Object.keys(response.data).length > 0) {
+            const hocphi = response.data.tonghocphi.toLocaleString('vi', { style: 'currency', currency: 'VND' });
+
+            message = {
+                "text": `Tổng học phí của sinh viên: ${response.data.sinhvien}  là: ${hocphi}`
+            };
+        }
 
         await chatbotService.callSendAPI(req.body.psid, message);
 
@@ -336,13 +373,18 @@ const handleUnpaidTuitionFees = (req, res) => {
 const handlePostUnpaidTuitionFees = async(req, res) => {
     try {
         let masv = req.body.masv;
+        let message = {
+            "text": "Bạn cung cấp sai, vui lòng nhập lại."
+        };
 
         const response = await axios.get(`${URL_WEB_SERVER}/hocphichuanop?code=${masv}`);
-        const hocphi = response.data.hocphichuanop.toLocaleString('vi', { style: 'currency', currency: 'VND' });
+        if (Object.keys(response.data).length > 0) {
+            const hocphi = response.data.hocphichuanop.toLocaleString('vi', { style: 'currency', currency: 'VND' });
 
-        let message = {
-            "text": `Tổng học phí chưa nộp của sinh viên: ${response.data.sinhvien}  là: ${hocphi}`
-        };
+            message = {
+                "text": `Tổng học phí chưa nộp của sinh viên: ${response.data.sinhvien}  là: ${hocphi}`
+            };
+        }
 
         await chatbotService.callSendAPI(req.body.psid, message);
 
@@ -367,13 +409,18 @@ const handleTuitionFeePaid = (req, res) => {
 const handlePostTuitionFeePaid = async(req, res) => {
     try {
         let masv = req.body.masv;
+        let message = {
+            "text": "Bạn cung cấp sai, vui lòng nhập lại."
+        };
 
         const response = await axios.get(`${URL_WEB_SERVER}/hocphidanop?code=${masv}`);
-        const hocphi = response.data.hocphidanop.toLocaleString('vi', { style: 'currency', currency: 'VND' });
+        if (Object.keys(response.data).length > 0) {
+            const hocphi = response.data.hocphidanop.toLocaleString('vi', { style: 'currency', currency: 'VND' });
 
-        let message = {
-            "text": `Tổng học phí đã nộp của sinh viên: ${response.data.sinhvien}  là: ${hocphi}`
-        };
+            message = {
+                "text": `Tổng học phí đã nộp của sinh viên: ${response.data.sinhvien}  là: ${hocphi}`
+            };
+        }
 
         await chatbotService.callSendAPI(req.body.psid, message);
 
@@ -398,18 +445,22 @@ const handleUnpaidCourseFees = (req, res) => {
 const handlePostUnpaidCourseFees = async(req, res) => {
     try {
         let masv = req.body.masv;
+        let message = {
+            "text": "Bạn cung cấp sai, vui lòng nhập lại."
+        };
 
         const response = await axios.get(`${URL_WEB_SERVER}/hocphitheomonchuadong?code=${masv}`);
+        if (response.data.length > 0) {
+            let subject = "";
+            response.data.forEach(element => {
+                const hocphi = element.hocphi.toLocaleString('vi', { style: 'currency', currency: 'VND' });
+                subject += `Môn học: ${element.mon}, học phí: ${hocphi} \n`
+            });
 
-        let subject = "";
-        response.data.forEach(element => {
-            const hocphi = element.hocphi.toLocaleString('vi', { style: 'currency', currency: 'VND' });
-            subject += `Môn học: ${element.mon}, học phí: ${hocphi} \n`
-        });
-
-        let message = {
-            "text": `Nhưng môn chưa đóng học phí: \n ${subject}`
-        };
+            message = {
+                "text": `Nhưng môn chưa đóng học phí: \n ${subject}`
+            };
+        }
 
         await chatbotService.callSendAPI(req.body.psid, message);
 
@@ -434,18 +485,22 @@ const handleSemestersFees = (req, res) => {
 const handlePostSemestersFees = async(req, res) => {
     try {
         let masv = req.body.masv;
+        let message = {
+            "text": "Bạn cung cấp sai, vui lòng nhập lại."
+        };
 
         const response = await axios.get(`${URL_WEB_SERVER}/hocphitheoki?code=${masv}`);
+        if (response.data.length > 0) {
+            let subject = "";
+            response.data.forEach(element => {
+                const hocphi = element.tongtien.toLocaleString('vi', { style: 'currency', currency: 'VND' });
+                subject += `Học kì: ${element.hocki}, niên khóa: ${element.nienkhoa} ,học phí: ${hocphi} \n`
+            });
 
-        let subject = "";
-        response.data.forEach(element => {
-            const hocphi = element.tongtien.toLocaleString('vi', { style: 'currency', currency: 'VND' });
-            subject += `Học kì: ${element.hocki}, niên khóa: ${element.nienkhoa} ,học phí: ${hocphi} \n`
-        });
-
-        let message = {
-            "text": `Học phí theo từng học kì: \n ${subject}`
-        };
+            message = {
+                "text": `Học phí theo từng học kì: \n ${subject}`
+            };
+        }
 
         await chatbotService.callSendAPI(req.body.psid, message);
 
@@ -542,8 +597,8 @@ async function handleMessageNPL(receivedMessage, senderPsid) {
         await chatbotService.showMessageUnpaidTuitionFees(senderPsid)
     } else if (response.intent == "agent.hocphitheomonchuadong") {
         await chatbotService.showMessageUnpaidCourseFees(senderPsid)
-    } else if (response.intent == "agent.hocphicackichuahoc") {
-        await chatbotService.showMessageFeesUnstudiedSemesters(senderPsid)
+    } else if (response.intent == "agent.hocphitheoki") {
+        await chatbotService.showMessageSemestersFees(senderPsid)
     }
     return response.answer;
 }

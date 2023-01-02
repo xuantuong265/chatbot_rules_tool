@@ -27,17 +27,7 @@ window.extAsyncInit = function() {
 
 //validate inputs
 function validateInputFields() {
-    const EMAIL_REG = /[a-zA-Z][a-zA-Z0-9_\.]{1,32}@[a-z0-9]{2,}(\.[a-z0-9]{2,4}){1,2}/g;
-
-    let email = $("#email");
     let masv = $("#masv");
-
-    if (!email.val().match(EMAIL_REG)) {
-        email.addClass("is-invalid");
-        return true;
-    } else {
-        email.removeClass("is-invalid");
-    }
 
     if (masv.val() === "") {
         masv.addClass("is-invalid");
@@ -60,8 +50,6 @@ function handleClickButtonScoreTable() {
         };
 
         if (!check) {
-            //close webview
-
 
             //send data to node.js server 
             $.ajax({

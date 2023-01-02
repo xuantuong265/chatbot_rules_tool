@@ -42,8 +42,8 @@ const initWebRoutes = (app) => {
     router.get("/unpaid-course-fees/:senderID", chatbotController.handleUnpaidCourseFees);
     router.post("/unpaid-course-fees", chatbotController.handlePostUnpaidCourseFees);
 
-    router.get("/semester-fee/:senderID", chatbotController.handleFeesUnstudiedSemesters);
-    router.post("/semester-fee", chatbotController.handlePostFeesUnstudiedSemesters);
+    router.get("/semester-fee/:senderID", chatbotController.handleSemestersFees);
+    router.post("/semester-fee", chatbotController.handlePostSemestersFees);
 
     return app.use("/", router);
 }

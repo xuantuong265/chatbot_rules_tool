@@ -84,8 +84,8 @@ const showMessageScore = (senderPsid) => {
 const showMessageLearnRest = (senderPsid) => {
     return new Promise(async(resolve, reject) => {
         try {
-            const url = `${URL_WEB_SERVER_CHATBOT}` + "/learn-rest" + `/${senderPsid}`;
-            const response = templateMessage(url, "HỌC PHẦN CÒN LẠI")
+            const url = `${URL_WEB_SERVER_CHATBOT}/learn-rest/${senderPsid}`;
+            const response = templateMessage(url, "CÁC MÔN ĐÃ HỌC")
 
             await callSendAPI(senderPsid, response);
             resolve("done");
@@ -98,7 +98,7 @@ const showMessageLearnRest = (senderPsid) => {
 const showMessageSubjectStuding = (senderPsid) => {
     return new Promise(async(resolve, reject) => {
         try {
-            const url = `${URL_WEB_SERVER_CHATBOT}` + "/subject-studing" + `/${senderPsid}`;
+            const url = `${URL_WEB_SERVER_CHATBOT}/subject-studing/${senderPsid}`;
             const response = templateMessage(url, "CÁC MÔN ĐANG HỌC")
 
             await callSendAPI(senderPsid, response);
@@ -112,7 +112,7 @@ const showMessageSubjectStuding = (senderPsid) => {
 const showMessageUnlearnedSubjects = (senderPsid) => {
     return new Promise(async(resolve, reject) => {
         try {
-            const url = `${URL_WEB_SERVER_CHATBOT}` + "/unlearned-subjects" + `/${senderPsid}`;
+            const url = `${URL_WEB_SERVER_CHATBOT}/unlearned-subjects/${senderPsid}`;
             const response = templateMessage(url, "CÁC MÔN CHƯA HỌC")
 
             await callSendAPI(senderPsid, response);
@@ -126,7 +126,7 @@ const showMessageUnlearnedSubjects = (senderPsid) => {
 const showMessageDebtCourses = (senderPsid) => {
     return new Promise(async(resolve, reject) => {
         try {
-            const url = `${URL_WEB_SERVER_CHATBOT}` + "/debt-courses" + `/${senderPsid}`;
+            const url = `${URL_WEB_SERVER_CHATBOT}/debt-courses/${senderPsid}`;
             const response = templateMessage(url, "CÁC MÔN NỢ")
 
             await callSendAPI(senderPsid, response);
@@ -140,7 +140,7 @@ const showMessageDebtCourses = (senderPsid) => {
 const showMessageTotalTuitionFee = (senderPsid) => {
     return new Promise(async(resolve, reject) => {
         try {
-            const url = `${URL_WEB_SERVER_CHATBOT}` + "/total-tuition-fee" + `/${senderPsid}`;
+            const url = `${URL_WEB_SERVER_CHATBOT}/total-tuition-fee/${senderPsid}`;
             const response = templateMessage(url, "TỔNG HỌC PHÍ")
 
             await callSendAPI(senderPsid, response);
@@ -154,7 +154,7 @@ const showMessageTotalTuitionFee = (senderPsid) => {
 const showMessageUnpaidTuitionFees = (senderPsid) => {
     return new Promise(async(resolve, reject) => {
         try {
-            const url = `${URL_WEB_SERVER_CHATBOT}` + "/unpaid-tuition-fees" + `/${senderPsid}`;
+            const url = `${URL_WEB_SERVER_CHATBOT}/unpaid-tuition-fees/${senderPsid}`;
             const response = templateMessage(url, "HỌC PHÍ CHƯA NỘP")
 
             await callSendAPI(senderPsid, response);
@@ -168,7 +168,7 @@ const showMessageUnpaidTuitionFees = (senderPsid) => {
 const showMessageTuitionFeePaid = (senderPsid) => {
     return new Promise(async(resolve, reject) => {
         try {
-            const url = `${URL_WEB_SERVER_CHATBOT}` + "/tuition-fee-paid" + `/${senderPsid}`;
+            const url = `${URL_WEB_SERVER_CHATBOT}/tuition-fee-paid/${senderPsid}`;
             const response = templateMessage(url, "HỌC PHÍ ĐÃ NỘP")
 
             await callSendAPI(senderPsid, response);
@@ -182,7 +182,7 @@ const showMessageTuitionFeePaid = (senderPsid) => {
 const showMessageUnpaidCourseFees = (senderPsid) => {
     return new Promise(async(resolve, reject) => {
         try {
-            const url = `${URL_WEB_SERVER_CHATBOT}` + "/unpaid-course-fees" + `/${senderPsid}`;
+            const url = `${URL_WEB_SERVER_CHATBOT}/unpaid-course-fees/${senderPsid}`;
             const response = templateMessage(url, "HỌC PHÍ THEO MÔN CHƯA ĐÓNG")
 
             await callSendAPI(senderPsid, response);
@@ -196,7 +196,7 @@ const showMessageUnpaidCourseFees = (senderPsid) => {
 const showMessageSemestersFees = (senderPsid) => {
     return new Promise(async(resolve, reject) => {
         try {
-            const url = `${URL_WEB_SERVER_CHATBOT}` + "/semester-fee" + `/${senderPsid}`;
+            const url = `${URL_WEB_SERVER_CHATBOT}/semester-fee/${senderPsid}`;
             const response = templateMessage(url, "HỌC PHÍ THEO KỲ")
 
             await callSendAPI(senderPsid, response);
