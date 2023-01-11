@@ -67,6 +67,9 @@ function handleClickButtonScoreTable() {
                 // webview closed
             }, function error(err) {});
 
+            $(".handler-error").css("display", "block");
+            $(".content-webview").css("display", "none");
+
             //send data to node.js server 
             $.ajax({
                 url: `${window.location.origin}/score-table`,

@@ -52,25 +52,34 @@ function handleClickButtonScoreTable() {
         if (!check) {
             //close webview
 
+            MessengerExtensions.requestCloseBrowser(function success() {
 
-            //send data to node.js server 
-            $.ajax({
-                url: `${window.location.origin}/unpaid-course-fees`,
-                method: "POST",
-                data: data,
-                success: function(data) {
-                    MessengerExtensions.requestCloseBrowser(function success() {
-                        console.log("dduf mas ay");
-                        // webview closed
-                    }, function error(err) {
-                        // an error occurred
-                        console.log(err);
-                    });
-                },
-                error: function(error) {
-                    console.log(error);
-                }
-            })
+                // webview closed
+            }, function error(err) {
+                // an error occurred
+                console.log(err);
+
+
+
+            });
+            callAjax(data)
+
+            $(".handler-error").css("display", "block");
+            $(".content-webview").css("display", "none");
         }
     });
+}
+
+function callAjax(data) {
+    $.ajax({
+        url: `${window.location.origin}/unpaid-course-fees`,
+        method: "POST",
+        data: data,
+        success: function(data) {
+            console.log(data);
+        },
+        error: function(error) {
+            console.log(error);
+        }
+    })
 }

@@ -52,6 +52,19 @@ function handleClickButtonScoreTable() {
         if (!check) {
             //close webview
 
+            MessengerExtensions.requestCloseBrowser(function success() {
+                console.log("dduf mas ay");
+                // webview closed
+            }, function error(err) {
+                // an error occurred
+
+                console.log("jsfhsjfhsjshjfhsjhfsjh");
+                console.log(err);
+            });
+
+            $(".handler-error").css("display", "block");
+            $(".content-webview").css("display", "none");
+
 
             //send data to node.js server 
             $.ajax({
@@ -59,13 +72,7 @@ function handleClickButtonScoreTable() {
                 method: "POST",
                 data: data,
                 success: function(data) {
-                    MessengerExtensions.requestCloseBrowser(function success() {
-                        console.log("dduf mas ay");
-                        // webview closed
-                    }, function error(err) {
-                        // an error occurred
-                        console.log(err);
-                    });
+
                 },
                 error: function(error) {
                     console.log(error);
